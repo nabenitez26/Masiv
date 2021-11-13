@@ -1,4 +1,5 @@
-﻿using RouletteGame.DTO;
+﻿using Microsoft.Extensions.Configuration;
+using RouletteGame.DTO;
 using RouletteGame.Models;
 using RouletteGame.Repositories;
 using System;
@@ -10,6 +11,9 @@ namespace RouletteGame.Services
 {
     public class RouletteService: IRouletteService
     {
+        private static readonly IConfiguration configuration = new ConfigurationBuilder()
+              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+              .Build();
         private readonly IRouletteRepository _rouletteRepository;
         public RouletteService(IRouletteRepository rouletteRepository)
         {
@@ -91,6 +95,8 @@ namespace RouletteGame.Services
         }
         private async Task<List<BetCustomer>> ValidateWinners(short numberSelect, List<BetCustomer> betCustomers)
         {
+            double ValueWinnerNumber =  configuration.GetValue<double>("ValueWinnerNumber");
+            double ValueWinnerColor  =  configuration.GetValue<double>("ValueWinnerColor");
             List<BetCustomer> betCustomersResult = new();
             await Task.Run(() =>
             {
@@ -103,12 +109,12 @@ namespace RouletteGame.Services
                     if (item.Number == numberSelect)
                     {
                         bet.IsWinner = true;
-                        bet.TotalMoney = item.Money * 5;
+                        bet.TotalMoney = item.Money * ValueWinnerNumber;
                     }
                     else if (ValidateIsColorWinner(numberSelect: numberSelect, numberBet: item.Number))
                     {
                         bet.IsWinner = true;
-                        bet.TotalMoney = item.Money * 1.8;
+                        bet.TotalMoney = item.Money * ValueWinnerColor;
                     }
                     else
                     {
